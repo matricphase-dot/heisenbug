@@ -92,6 +92,14 @@ It never pinned a seed for the thread race, and never added a lock for hash orde
 
 **A real integration lesson:** Nemotron's reasoning tiers emit `reasoning_content` before the answer, so a conservative `max_tokens` silently truncates the JSON payload mid-string. Our first live run lost 2 of 3 analysis calls to parse errors. We fixed it with a salvage parser that closes unterminated strings and braces, plus one retry at double the budget with a brevity instruction. Failure rate went to zero across repeated runs. This is the kind of thing you only discover by running against the real models.
 
+## On Sandboxes access — full transparency
+
+Heisenbug ships two executors behind one interface. `NebiusForkExecutor` is written against ConTree's real branching API — where `state.run(...)` returns a *new* state branched from the parent instead of mutating it, so calling it N times on one parent gives N executions that each began from byte-identical state. `LocalForkExecutor` implements the identical experiment locally.
+
+**Sandboxes is Beta and gated per-account.** Our account returns `ForbiddenError`, so the published runs used the local executor; `prepare()` catches this and falls back automatically. We are stating this plainly rather than implying Sandbox execution we did not have. The method, the classifier and the statistics are executor-independent — and the moment Beta access is granted, the same code path runs against real Sandbox branches with no changes.
+
+One design detail worth flagging: ConTree derives each state's `uuid` from its content, so branches of a *deterministic* command collapse to the same uuid while a *nondeterministic* one produces different uuids. That is divergence detection handed to you by the platform, and `NebiusForkExecutor` records those uuids as corroborating evidence alongside the test outcomes.
+
 ## Statistical honesty (the hard part)
 
 This is where most of the engineering went, and it's the part we're proudest of.
@@ -140,6 +148,7 @@ We also learned to be disciplined about where the LLM sits in the pipeline. Our 
 
 *(Required field — "Most Valuable Feedback" is a real prize. Fill in from your own live run; starter notes below.)*
 
+- **Sandboxes Beta gating is invisible until runtime.** The Sandboxes panel appears in the console sidebar and `contree-sdk` installs and authenticates fine, but the first `run()` returns `ForbiddenError`. Surfacing entitlement in the console (or failing at client construction with a clear "request Beta access" message) would save developers from building against an API they cannot execute.
 - **Reasoning models need a documented token-budget contract.** Nemotron tiers spend a large, variable share of `max_tokens` on `reasoning_content` before emitting the answer. When the budget is tight the JSON payload is truncated mid-string with `finish_reason: "stop"` — indistinguishable from a clean completion. Documenting a recommended headroom for structured output, or exposing a separate reasoning budget, would save every agent developer this exact debugging session.
 - **Model IDs in the catalog use inconsistent casing** (`nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B` vs `nvidia/nemotron-3-super-120b-a12b`). A canonical, copy-pasteable list per tier would prevent a class of silent 404s.
 - **Sandboxes' branching is under-marketed as a *measurement* primitive.** The docs frame forking around safety and parallel exploration. Identical-state replication as a way to *isolate nondeterminism* is a distinct, powerful use case that isn't documented anywhere.

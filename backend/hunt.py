@@ -57,7 +57,19 @@ class Heisenbug:
             self.log(self.target.notes, "meta")
         self.log(f"Executor: {self.ex.name} · {config.REPLICAS} replicas per fork point", "meta")
         self.log("Materialising target (clone + install if needed)…", "info")
-        self.ex.prepare()
+        try:
+            self.ex.prepare()
+        except Exception as exc:
+            # Sandboxes is Beta and gated per-account; a permission error here
+            # must not abort the investigation. The local executor implements
+            # the identical experiment.
+            from .executor import LocalForkExecutor
+
+            self.log(f"Sandboxes unavailable ({type(exc).__name__}: "
+                     f"{str(exc)[:90]}) — falling back to local executor.", "warn")
+            self.ex = LocalForkExecutor(self.repo_dir, self.target)
+            self.ex.prepare()
+            self.log(f"Executor: {self.ex.name}", "meta")
 
         # ---- 1. Sweep fork points -----------------------------------------
         matrix: dict[str, dict] = {}

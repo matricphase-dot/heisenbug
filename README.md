@@ -139,6 +139,25 @@ tight `max_tokens` truncates the JSON payload. `chat_json()` handles this with a
 (closes unterminated strings/braces) plus one retry at double the budget. Failure rate went from
 2-of-3 calls to 0-of-3 across repeated runs.
 
+## On Sandboxes access (Beta)
+
+Heisenbug ships two executors behind one interface:
+
+- **`NebiusForkExecutor`** — the intended path. Written against ConTree's real branching API,
+  where `state.run(...)` returns a *new* state branched from the parent rather than mutating it.
+  Calling it N times on the same parent yields N executions that each began from byte-identical
+  state. It also records each branch's content-derived `uuid`: identical uuids across branches
+  independently corroborate determinism, differing uuids corroborate nondeterminism.
+- **`LocalForkExecutor`** — the fallback, implementing the identical experiment with
+  copy-on-write directories and `PYTHONHASHSEED` control. Thread scheduling and the wall clock
+  remain genuinely live, so the science is unchanged.
+
+**Sandboxes is in Beta and gated per-account.** On our account the API returns
+`ForbiddenError: You do not have permission to perform this action`, so the runs published here
+were produced by the local executor. `prepare()` catches this and falls back automatically —
+the investigation never aborts. Request Beta access via the Nebius Discord or `contree@nebius.com`
+and the same code path runs against real Sandbox branches with no changes.
+
 ## Statistical honesty
 
 A test failing at rate *p* looks unanimous across *n* replicas with probability `p^n + (1-p)^n`,

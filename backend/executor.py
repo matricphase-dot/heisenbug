@@ -64,7 +64,30 @@ _FORK_ENV = {
 
 
 class NebiusForkExecutor:
-    """Replicate test runs from identical Sandbox checkpoints."""
+    """Replicate test runs from identical Nebius Sandbox (ConTree) states.
+
+    ConTree's branching model is the whole reason Heisenbug's experiment is
+    possible. Calling ``state.run(...)`` does not mutate ``state`` — it returns a
+    *new* state branched from it. So calling ``.run()`` N times on the same
+    parent gives N executions that each began from byte-identical filesystem and
+    process state, which is exactly the controlled experiment we need:
+
+        base   = images.use("python:3.12-slim")
+        ready  = base.run(shell="pip install pytest && ...", disposable=False)
+        r1     = ready.run(shell="pytest ...", disposable=False)   # branch 1
+        r2     = ready.run(shell="pytest ...", disposable=False)   # branch 2
+        #        ^ r1 and r2 both started from `ready`, bit for bit
+
+    A useful property falls out of this: ConTree derives each state's ``uuid``
+    from its content, so two branches of a *deterministic* command collapse to
+    the same uuid, while a *nondeterministic* one yields different uuids. We
+    record those uuids alongside the pass/fail data as corroborating evidence
+    for the divergence we measure from test outcomes.
+
+    Note: Sandboxes is in Beta and gated per-account. If the API returns a
+    permission error, `make_executor` transparently falls back to the local
+    executor, which implements the identical experiment.
+    """
 
     name = "nebius-sandboxes"
 
@@ -74,56 +97,88 @@ class NebiusForkExecutor:
         self.repo_dir = repo_dir
         self.target = target
         self._pytest_args = list(getattr(target, "pytest_args", []) or [])
-        self.client = ContreeSync()
-        self._checkpoints: dict[str, object] = {}
+        self.client = ContreeSync(token=config.NEBIUS_API_KEY or None)
+        self._states: dict[str, object] = {}
+        self.state_uuids: dict[str, list[str]] = {}
+
+    # -- helpers ---------------------------------------------------------
+
+    def _upload_spec(self) -> dict[str, str]:
+        """Map local repo files -> absolute in-sandbox paths under /app."""
+        spec: dict[str, str] = {}
+        for root, dirs, names in os.walk(self.repo_dir):
+            dirs[:] = [d for d in dirs
+                       if d not in ("__pycache__", ".git", ".venv", ".pytest_cache")]
+            for n in names:
+                if n.endswith(".pyc"):
+                    continue
+                local = os.path.join(root, n)
+                rel = os.path.relpath(local, self.repo_dir)
+                spec[f"/app/{rel}"] = local
+        return spec
 
     def prepare(self) -> None:
-        image = self.client.images.use(config.SANDBOX_IMAGE)
-        session = image.session()
+        base = self.client.images.use(config.SANDBOX_IMAGE)
         t = self.target
-        if t is not None and getattr(t, "git_url", None):
-            session.run("sh", args=["-c",
-                f"apt-get update -qq && apt-get install -y -qq git && "
-                f"git clone --depth 1 {t.git_url} /app"]).wait()
-            if t.install:
-                session.run("sh", args=["-c",
-                    "cd /app && " + " ".join(t.install)]).wait()
-        else:
-            session.rsync(source=self.repo_dir, destination="/app",
-                          exclude=["__pycache__", ".git", ".venv", ".pytest_cache"])
-        session.run("pip", args=["install", "-q", "pytest"]).wait()
-        self._base = session
 
-        # Materialise one checkpoint per fork point along the timeline.
-        for fp in config.FORK_POINTS:
-            s = self._base.fork()
-            if fp != "pre_interpreter":
-                # Advance execution past interpreter start / imports so that
-                # startup-seeded entropy is already baked into the snapshot.
-                s.run("sh", args=["-c",
-                    "cd /app && python -c 'import sys; import tests' 2>/dev/null || true"]).wait()
-            self._checkpoints[fp] = s
+        if t is not None and getattr(t, "git_url", None):
+            ready = base.run(
+                shell=(
+                    "apt-get update -qq && apt-get install -y -qq git >/dev/null && "
+                    f"git clone --depth 1 {t.git_url} /app && "
+                    "pip install -q pytest && "
+                    + ("cd /app && " + " ".join(t.install) if t.install else "true")
+                ),
+                disposable=False,
+            ).wait()
+        else:
+            ready = base.run(
+                shell="pip install -q pytest && mkdir -p /app",
+                files=self._upload_spec(),
+                disposable=False,
+            ).wait()
+
+        # One checkpoint per fork point along the execution timeline. Later fork
+        # points advance execution so startup-seeded entropy is already captured
+        # in the snapshot; replicas branched from them inherit it identically.
+        self._states["pre_interpreter"] = ready
+        warm = ready.run(
+            shell="cd /app && python -c 'import sys, sysconfig' >/dev/null 2>&1 || true",
+            disposable=False,
+        ).wait()
+        self._states["post_import"] = warm
+        self._states["post_fixture"] = warm.run(
+            shell="cd /app && python -m pytest --collect-only -q >/dev/null 2>&1 || true",
+            disposable=False,
+        ).wait()
 
     def replicate(self, fork_point: str, n: int) -> list[RunOutcome]:
-        base = self._checkpoints[fork_point]
+        parent = self._states[fork_point]
+        args = " ".join(self._pytest_args)
+        cmd = f"cd /app && python -m pytest -v --tb=no -p no:cacheprovider {args}"
 
-        def one(i: int) -> RunOutcome:
-            # Every replica forks the SAME checkpoint -> byte-identical state.
-            child = base.fork()
-            extra = " ".join(self._pytest_args)
-            res = child.run("sh", args=[
-                "-c", f"cd /app && python -m pytest -v --tb=no "
-                      f"-p no:cacheprovider {extra}"
-            ]).wait()
-            text = (res.stdout or "") + (res.stderr or "")
-            return RunOutcome(parse_verbose(text), text[-3000:], i)
+        def one(i: int) -> tuple[RunOutcome, str]:
+            # Each call branches from the SAME parent -> byte-identical start.
+            st = parent.run(shell=cmd, disposable=False).wait()
+            out = st.stdout if isinstance(st.stdout, str) else ""
+            err = st.stderr if isinstance(st.stderr, str) else ""
+            text = out + err
+            return RunOutcome(parse_verbose(text), text[-3000:], i), str(st.uuid)
 
         with ThreadPoolExecutor(max_workers=min(n, 16)) as pool:
-            return list(pool.map(one, range(n)))
+            pairs = list(pool.map(one, range(n)))
+
+        # Corroborating signal: distinct content-hashes across branches of the
+        # same parent independently confirm the execution was nondeterministic.
+        self.state_uuids[fork_point] = [u for _, u in pairs]
+        return [o for o, _ in pairs]
 
     def source(self, path: str) -> str:
         try:
-            return self._base.cat(os.path.join("/app", path))
+            state = self._states.get("pre_interpreter")
+            if state is None:
+                return ""
+            return state.read(f"/app/{path}").decode("utf-8", "replace")
         except Exception:
             return ""
 
