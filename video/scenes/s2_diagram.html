@@ -1,0 +1,29 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><style>
+body{margin:0;background:#07090d;color:#e6edf3;font-family:ui-sans-serif,-apple-system,"Segoe UI",sans-serif;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh}
+h2{font-size:34px;margin:0 0 8px;font-weight:700}
+.sub{color:#8b97a8;font-size:19px;margin-bottom:46px}
+.row{display:flex;gap:11px;margin-bottom:34px}
+.st{width:52px;height:52px;border-radius:9px;border:1.5px solid #2a3444;background:#12161d;
+  display:flex;align-items:center;justify-content:center;font:11px ui-monospace,monospace;color:#8b97a8;
+  opacity:0;animation:pop .35s forwards}
+@keyframes pop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+.cap{color:#ff8a80;font-size:22px;margin-top:8px;opacity:0;animation:fade .8s forwards;animation-delay:4.2s}
+.cap2{color:#76b900;font-size:24px;font-weight:700;margin-top:30px;opacity:0;animation:fade .8s forwards;animation-delay:6.5s}
+@keyframes fade{to{opacity:1}}
+</style></head><body>
+<h2>Re-running starts from a <span style="color:#ff5f56">different state</span> every time</h2>
+<div class="sub">different PID · different hash seed · different clock · different page cache</div>
+<div class="row" id="r1"></div><div class="row" id="r2"></div>
+<div class="cap">"failed 12 / 100" — a frequency. Not a mechanism.</div>
+<div class="cap2">You can't fix what you can't localise.</div>
+<script>
+const L=['a3f','7c1','9e4','2bd','f08','41a','c6e','83b','5d2','e97','1f4','6ac'];
+[['r1',0],['r2',6]].forEach(([id,off])=>{
+  const el=document.getElementById(id);
+  for(let i=0;i<6;i++){
+    const d=document.createElement('div');d.className='st';d.textContent=L[off+i];
+    d.style.animationDelay=((off+i)*0.2)+'s';el.appendChild(d);
+  }
+});
+</script></body></html>

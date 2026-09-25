@@ -1,0 +1,29 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><style>
+body{margin:0;background:#07090d;font-family:ui-monospace,Menlo,Consolas,monospace;color:#e6edf3;
+  font-size:26px;padding:70px 90px;line-height:1.75}
+.p{color:#8b97a8}.g{color:#76b900}.r{color:#ff5f56}.d{color:#4b5666}
+.cur{display:inline-block;width:13px;height:26px;background:#76b900;vertical-align:-4px;
+  animation:bl 1s steps(2) infinite}@keyframes bl{50%{opacity:0}}
+.ln{opacity:0;animation:in .25s forwards}
+</style></head><body>
+<div id="t"></div>
+<script>
+const lines=[
+ ['<span class="p">$</span> pytest tests/test_service.py',0],
+ ['<span class="r">FAILED</span> test_concurrent_counter  <span class="d">1 failed, 4 passed</span>',600],
+ ['',1100],
+ ['<span class="p">$</span> pytest tests/test_service.py  <span class="d"># retry</span>',1500],
+ ['<span class="g">PASSED</span>  <span class="d">5 passed</span>',2100],
+ ['',2500],
+ ['<span class="p">$</span> pytest tests/test_service.py  <span class="d"># again</span>',3000],
+ ['<span class="r">FAILED</span> test_concurrent_counter  <span class="d">1 failed, 4 passed</span>',3600],
+ ['',4100],
+ ['<span class="d">// so you hit retry. and you move on.</span>',5200],
+ ['<span class="d">// 100 runs tells you IF. never WHY.</span>',8000],
+];
+const t=document.getElementById('t');
+lines.forEach(([h,d])=>setTimeout(()=>{
+  const e=document.createElement('div');e.className='ln';e.style.animation='none';e.style.opacity=1;
+  e.innerHTML=h||'&nbsp;';t.appendChild(e);
+},d));
+</script></body></html>
