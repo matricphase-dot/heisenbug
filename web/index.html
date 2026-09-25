@@ -78,7 +78,7 @@
   <div class="spacer"></div>
   <select id="target" style="background:#0e1219;color:var(--txt);border:1px solid var(--line);
     border-radius:7px;padding:9px 11px;font-size:13px;margin-right:10px"></select>
-  <button id="go">Replay investigation</button>
+  <button id="go" disabled>Replay investigation</button>
 </header>
 <div class="sub" id="cfg">loading…</div>
 <div style="padding:11px 22px;background:rgba(74,163,255,.10);border-bottom:1px solid #1d2430;
@@ -133,7 +133,44 @@ fetch("session.json").then(r=>r.json()).then(s=>{
   const sel=document.getElementById("target");
   sel.innerHTML='<option>Bundled demo suite</option>';
   sel.disabled=true;
+  document.getElementById("go").disabled=false;
 });
+
+function addLog(msg,kind){
+  const d=document.createElement("div");
+  d.className="row"+(kind==="phase"?" phase":"");
+  d.innerHTML=`<span class="k">›</span><span class="${kind||'info'}">${esc(msg)}</span>`;
+  logEl.appendChild(d);logEl.scrollTop=logEl.scrollHeight;
+}
+
+function renderMatrix(){
+  const tests=Object.keys(cells).sort();
+  if(!tests.length)return;
+  let h=`<table><thead><tr><th>Test</th>`;
+  FORKS.forEach(f=>h+=`<th>${esc(f)}</th>`);
+  h+=`<th>Signature</th><th>Verdict</th></tr></thead><tbody>`;
+  tests.forEach(t=>{
+    h+=`<tr><td class="tname">${esc(t)}</td>`;
+    FORKS.forEach(f=>{
+      const c=cells[t]&&cells[t][f];
+      if(!c){h+=`<td><span class="cell c-none">—</span></td>`;return;}
+      const cls=c.diverges?"c-div":"c-stable";
+      h+=`<td><span class="cell ${cls}">${c.failed}/${c.total}</span></td>`;
+    });
+    const v=verdicts[t];
+    if(v){
+      const sig=v.signature.map(d=>d?"D":"S").join("");
+      const bc={true_runtime:"b-runtime",startup_seeded:"b-seeded",
+                deterministic_fail:"b-detfail",deterministic_pass:"b-pass"}[v.cls];
+      h+=`<td><span class="sig">${sig}</span></td><td><span class="badge ${bc}">${esc(v.label)}</span></td>`;
+    } else h+=`<td class="sig" style="color:#4b5666">···</td><td></td>`;
+    h+=`</tr>`;
+  });
+  h+=`</tbody></table>
+    <div class="note">D = replicas launched from identical state disagreed · S = all replicas agreed.
+    A test still diverging at the last fork point has live entropy; one that goes stable was seeded earlier.</div>`;
+  mxEl.innerHTML=h;
+}
 
 const HANDLERS={
   log:  d=>addLog(d.msg,d.kind),
@@ -142,39 +179,43 @@ const HANDLERS={
   analysis: a=>{
     const v=verdicts[a.test]||{};
     const bc={true_runtime:"b-runtime",startup_seeded:"b-seeded"}[a.cls]||"b-pass";
-    const d=document.createElement("div"); d.className="card";
-    d.innerHTML=`<h4>${esc(a.test)} <span class="badge ${bc}">${esc(v.label||"")}</span></h4>`+
+    const el=document.createElement("div"); el.className="card";
+    el.innerHTML=`<h4>${esc(a.test)} <span class="badge ${bc}">${esc(v.label||"")}</span></h4>`+
       `<p>${esc(a.summary)}</p>`+
       (a.repro?`<span class="repro">${esc(a.repro)}</span>`:"")+
       (a.patch?`<pre>${esc(a.patch)}</pre>`:"")+
       (v.note?`<div class="note">${esc(v.note)}</div>`:"");
-    fdEl.appendChild(d);
+    fdEl.appendChild(el);
   },
   report: d=>{
     const el=document.createElement("div"); el.className="report";
     el.textContent=d.text; fdEl.insertBefore(el,fdEl.firstChild);
   },
   done: d=>{
-    const n=(d.verdicts||[]).length;
     addLog(`Complete: ${d.true_runtime} true-runtime, ${d.startup_seeded} startup-seeded `+
            `across ${d.runs} test-suite runs.`,"good");
-    const b=document.getElementById("go"); b.disabled=false; b.textContent="Replay again";
+    const b=document.getElementById("go");
+    b.disabled=false; b.textContent="Replay again";
   }
 };
 
+let TIMERS=[];
 document.getElementById("go").onclick=()=>{
   if(!SESSION) return;
   const btn=document.getElementById("go");
   btn.disabled=true; btn.textContent="replaying…";
+  TIMERS.forEach(clearTimeout); TIMERS=[];
   for(const k in cells)delete cells[k];
   for(const k in verdicts)delete verdicts[k];
   logEl.innerHTML=""; fdEl.innerHTML=""; mxEl.innerHTML="";
 
-  // Replay with the original inter-event timing, compressed so the whole
-  // investigation lands in ~14s without feeling artificially fast.
-  const SPEED=1.3, evs=SESSION.events;
-  evs.forEach(e=>{
-    setTimeout(()=>{ const h=HANDLERS[e.event]; if(h) h(e.data); }, (e.t*1000)/SPEED);
+  // Replay using the captured inter-event timing, lightly compressed so the
+  // whole investigation lands in ~14s without feeling artificially fast.
+  const SPEED=1.3;
+  SESSION.events.forEach(e=>{
+    TIMERS.push(setTimeout(()=>{
+      const h=HANDLERS[e.event]; if(h) h(e.data);
+    }, (e.t*1000)/SPEED));
   });
 };
 </script>
