@@ -2,6 +2,14 @@
 
 **Nebius x NVIDIA Global AI Hackathon — Coding & Agentic Engineering Track**
 
+**▶ Live demo: https://heisenbug-aditya-mehras-projects.vercel.app**
+**▶ Source: https://github.com/matricphase-dot/heisenbug**
+
+*The hosted demo replays a real session captured against live NVIDIA Nemotron models — every
+number, analysis and patch is genuine output. Heisenbug spawns 36 parallel pytest processes per
+run, which exceeds serverless limits, so the hosted build replays rather than re-executes. Clone
+the repo to run it live.*
+
 > Re-running a test suite 100 times tells you a test is flaky. It never tells you **why** —
 > because every re-run starts from a *different* state. Heisenbug launches replicas from
 > **byte-identical execution state**, which turns flakiness from a statistic into a

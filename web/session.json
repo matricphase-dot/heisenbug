@@ -1,0 +1,657 @@
+{
+ "captured_at": "2026-09-25 09:17 UTC",
+ "models": {
+  "nano": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+  "super": "nvidia/nemotron-3-super-120b-a12b",
+  "ultra": "nvidia/Nemotron-3-Ultra-550b-a55b"
+ },
+ "fork_points": [
+  "pre_interpreter",
+  "post_import",
+  "post_fixture"
+ ],
+ "replicas": 12,
+ "duration": 18.4,
+ "events": [
+  {
+   "t": 0.0,
+   "event": "log",
+   "data": {
+    "msg": "Target: Bundled demo suite",
+    "kind": "meta"
+   }
+  },
+  {
+   "t": 0.0,
+   "event": "log",
+   "data": {
+    "msg": "Executor: local-fork \u00b7 12 replicas per fork point",
+    "kind": "meta"
+   }
+  },
+  {
+   "t": 0.0,
+   "event": "log",
+   "data": {
+    "msg": "Materialising target (clone + install if needed)\u2026",
+    "kind": "info"
+   }
+  },
+  {
+   "t": 0.0,
+   "event": "log",
+   "data": {
+    "msg": "\u2500\u2500 Fork point 'pre_interpreter': launching 12 replicas from identical state \u2500\u2500",
+    "kind": "phase"
+   }
+  },
+  {
+   "t": 2.27,
+   "event": "cell",
+   "data": {
+    "fork_point": "pre_interpreter",
+    "test": "test_addition",
+    "failed": 0,
+    "total": 12,
+    "diverges": false,
+    "fail_rate": 0.0
+   }
+  },
+  {
+   "t": 2.27,
+   "event": "cell",
+   "data": {
+    "fork_point": "pre_interpreter",
+    "test": "test_cache_timestamp",
+    "failed": 5,
+    "total": 12,
+    "diverges": true,
+    "fail_rate": 0.4166666666666667
+   }
+  },
+  {
+   "t": 2.27,
+   "event": "cell",
+   "data": {
+    "fork_point": "pre_interpreter",
+    "test": "test_concurrent_counter",
+    "failed": 6,
+    "total": 12,
+    "diverges": true,
+    "fail_rate": 0.5
+   }
+  },
+  {
+   "t": 2.27,
+   "event": "cell",
+   "data": {
+    "fork_point": "pre_interpreter",
+    "test": "test_string",
+    "failed": 0,
+    "total": 12,
+    "diverges": false,
+    "fail_rate": 0.0
+   }
+  },
+  {
+   "t": 2.27,
+   "event": "cell",
+   "data": {
+    "fork_point": "pre_interpreter",
+    "test": "test_tag_ordering",
+    "failed": 5,
+    "total": 12,
+    "diverges": true,
+    "fail_rate": 0.4166666666666667
+   }
+  },
+  {
+   "t": 2.27,
+   "event": "log",
+   "data": {
+    "msg": "3 test(s) diverged from identical state: test_tag_ordering, test_concurrent_counter, test_cache_timestamp",
+    "kind": "bad"
+   }
+  },
+  {
+   "t": 2.27,
+   "event": "log",
+   "data": {
+    "msg": "\u2500\u2500 Fork point 'post_import': launching 12 replicas from identical state \u2500\u2500",
+    "kind": "phase"
+   }
+  },
+  {
+   "t": 4.71,
+   "event": "cell",
+   "data": {
+    "fork_point": "post_import",
+    "test": "test_addition",
+    "failed": 0,
+    "total": 12,
+    "diverges": false,
+    "fail_rate": 0.0
+   }
+  },
+  {
+   "t": 4.71,
+   "event": "cell",
+   "data": {
+    "fork_point": "post_import",
+    "test": "test_cache_timestamp",
+    "failed": 3,
+    "total": 12,
+    "diverges": true,
+    "fail_rate": 0.25
+   }
+  },
+  {
+   "t": 4.71,
+   "event": "cell",
+   "data": {
+    "fork_point": "post_import",
+    "test": "test_concurrent_counter",
+    "failed": 3,
+    "total": 12,
+    "diverges": true,
+    "fail_rate": 0.25
+   }
+  },
+  {
+   "t": 4.71,
+   "event": "cell",
+   "data": {
+    "fork_point": "post_import",
+    "test": "test_string",
+    "failed": 0,
+    "total": 12,
+    "diverges": false,
+    "fail_rate": 0.0
+   }
+  },
+  {
+   "t": 4.71,
+   "event": "cell",
+   "data": {
+    "fork_point": "post_import",
+    "test": "test_tag_ordering",
+    "failed": 12,
+    "total": 12,
+    "diverges": false,
+    "fail_rate": 1.0
+   }
+  },
+  {
+   "t": 4.71,
+   "event": "log",
+   "data": {
+    "msg": "2 test(s) diverged from identical state: test_concurrent_counter, test_cache_timestamp",
+    "kind": "bad"
+   }
+  },
+  {
+   "t": 4.71,
+   "event": "log",
+   "data": {
+    "msg": "\u2500\u2500 Fork point 'post_fixture': launching 12 replicas from identical state \u2500\u2500",
+    "kind": "phase"
+   }
+  },
+  {
+   "t": 7.23,
+   "event": "cell",
+   "data": {
+    "fork_point": "post_fixture",
+    "test": "test_addition",
+    "failed": 0,
+    "total": 12,
+    "diverges": false,
+    "fail_rate": 0.0
+   }
+  },
+  {
+   "t": 7.23,
+   "event": "cell",
+   "data": {
+    "fork_point": "post_fixture",
+    "test": "test_cache_timestamp",
+    "failed": 5,
+    "total": 12,
+    "diverges": true,
+    "fail_rate": 0.4166666666666667
+   }
+  },
+  {
+   "t": 7.23,
+   "event": "cell",
+   "data": {
+    "fork_point": "post_fixture",
+    "test": "test_concurrent_counter",
+    "failed": 4,
+    "total": 12,
+    "diverges": true,
+    "fail_rate": 0.3333333333333333
+   }
+  },
+  {
+   "t": 7.23,
+   "event": "cell",
+   "data": {
+    "fork_point": "post_fixture",
+    "test": "test_string",
+    "failed": 0,
+    "total": 12,
+    "diverges": false,
+    "fail_rate": 0.0
+   }
+  },
+  {
+   "t": 7.23,
+   "event": "cell",
+   "data": {
+    "fork_point": "post_fixture",
+    "test": "test_tag_ordering",
+    "failed": 12,
+    "total": 12,
+    "diverges": false,
+    "fail_rate": 1.0
+   }
+  },
+  {
+   "t": 7.23,
+   "event": "log",
+   "data": {
+    "msg": "2 test(s) diverged from identical state: test_concurrent_counter, test_cache_timestamp",
+    "kind": "bad"
+   }
+  },
+  {
+   "t": 7.23,
+   "event": "log",
+   "data": {
+    "msg": "\u2500\u2500 Classifying by divergence signature \u2500\u2500",
+    "kind": "phase"
+   }
+  },
+  {
+   "t": 7.23,
+   "event": "verdict",
+   "data": {
+    "test": "test_addition",
+    "cls": "deterministic_pass",
+    "label": "Deterministic pass",
+    "signature": [
+     false,
+     false,
+     false
+    ],
+    "fail_rates": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "transition": null,
+    "window": null,
+    "confidence": 0.75,
+    "explain": "Stable and passing at every fork point.",
+    "remedy": "No action required.",
+    "note": ""
+   }
+  },
+  {
+   "t": 7.23,
+   "event": "log",
+   "data": {
+    "msg": "[SSS] test_addition \u2192 Deterministic pass",
+    "kind": "good"
+   }
+  },
+  {
+   "t": 7.23,
+   "event": "verdict",
+   "data": {
+    "test": "test_cache_timestamp",
+    "cls": "true_runtime",
+    "label": "True runtime nondeterminism",
+    "signature": [
+     true,
+     true,
+     true
+    ],
+    "fail_rates": [
+     0.417,
+     0.25,
+     0.417
+    ],
+    "transition": null,
+    "window": null,
+    "confidence": 0.99,
+    "explain": "Diverges even when every replica starts from byte-identical state at the latest fork point. The entropy source is live during execution \u2014 thread interleaving, wall-clock reads, or real I/O. Pinning a seed cannot fix this.",
+    "remedy": "Introduce synchronisation or inject the nondeterministic dependency: a lock around the read-modify-write, or a clock/IO seam the test can control.",
+    "note": ""
+   }
+  },
+  {
+   "t": 7.23,
+   "event": "log",
+   "data": {
+    "msg": "[DDD] test_cache_timestamp \u2192 True runtime nondeterminism",
+    "kind": "bad"
+   }
+  },
+  {
+   "t": 7.23,
+   "event": "verdict",
+   "data": {
+    "test": "test_concurrent_counter",
+    "cls": "true_runtime",
+    "label": "True runtime nondeterminism",
+    "signature": [
+     true,
+     true,
+     true
+    ],
+    "fail_rates": [
+     0.5,
+     0.25,
+     0.333
+    ],
+    "transition": null,
+    "window": null,
+    "confidence": 0.99,
+    "explain": "Diverges even when every replica starts from byte-identical state at the latest fork point. The entropy source is live during execution \u2014 thread interleaving, wall-clock reads, or real I/O. Pinning a seed cannot fix this.",
+    "remedy": "Introduce synchronisation or inject the nondeterministic dependency: a lock around the read-modify-write, or a clock/IO seam the test can control.",
+    "note": ""
+   }
+  },
+  {
+   "t": 7.23,
+   "event": "log",
+   "data": {
+    "msg": "[DDD] test_concurrent_counter \u2192 True runtime nondeterminism",
+    "kind": "bad"
+   }
+  },
+  {
+   "t": 7.23,
+   "event": "verdict",
+   "data": {
+    "test": "test_string",
+    "cls": "deterministic_pass",
+    "label": "Deterministic pass",
+    "signature": [
+     false,
+     false,
+     false
+    ],
+    "fail_rates": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "transition": null,
+    "window": null,
+    "confidence": 0.75,
+    "explain": "Stable and passing at every fork point.",
+    "remedy": "No action required.",
+    "note": ""
+   }
+  },
+  {
+   "t": 7.23,
+   "event": "log",
+   "data": {
+    "msg": "[SSS] test_string \u2192 Deterministic pass",
+    "kind": "good"
+   }
+  },
+  {
+   "t": 7.23,
+   "event": "verdict",
+   "data": {
+    "test": "test_tag_ordering",
+    "cls": "startup_seeded",
+    "label": "Startup-seeded nondeterminism",
+    "signature": [
+     true,
+     false,
+     false
+    ],
+    "fail_rates": [
+     0.417,
+     1.0,
+     1.0
+    ],
+    "transition": "post_import",
+    "window": [
+     "pre_interpreter",
+     "post_import"
+    ],
+    "confidence": 0.99,
+    "explain": "Diverges when forked before interpreter startup, but is perfectly stable when forked after. The nondeterminism was fixed once at startup \u2014 hash ordering, PID, environment, or a module-level RNG seed. Pinning it is a complete fix.",
+    "remedy": "Pin the startup entropy (PYTHONHASHSEED, explicit sort, or an explicit RNG seed) so ordering is defined rather than incidental.",
+    "note": "Transition is significant: chance of unanimity at 12 replicas given a ~42% fail rate is only p=0.000."
+   }
+  },
+  {
+   "t": 7.23,
+   "event": "log",
+   "data": {
+    "msg": "[DSS] test_tag_ordering \u2192 Startup-seeded nondeterminism \u00b7 entropy enters between 'pre_interpreter' and 'post_import'",
+    "kind": "warn"
+   }
+  },
+  {
+   "t": 7.23,
+   "event": "log",
+   "data": {
+    "msg": "\u2500\u2500 Synthesising repro + fix for 3 flaky test(s) \u00b7 nvidia/nemotron-3-super-120b-a12b \u2500\u2500",
+    "kind": "phase"
+   }
+  },
+  {
+   "t": 11.99,
+   "event": "analysis",
+   "data": {
+    "test": "test_tag_ordering",
+    "cls": "startup_seeded",
+    "summary": "The test fails because set iteration order depends on Python's hash seed (PYTHONHASHSEED), which is randomized at interpreter startup. When the test is forked before the interpreter starts, replicas may see different hash seeds and thus different iteration orders, causing the assertion about the first element of the set to fail about half the time.",
+    "repro": "Run the test repeatedly without fixing PYTHONHASHSEED, e.g.: `for i in {1..20}; do python -m pytest tests/test_service.py::test_tag_ordering -q; done`. You will see roughly 50% failures. Alternatively, launch two replicas from a byte-identical state before interpreter initialization (e.g., using os.fork() before importing the test module) and observe that they diverge on the assertion.",
+    "patch": "--- tests/test_service.py\n+++ tests/test_service.py\n@@\n-def test_tag_ordering():\n-    # Two elements only: which one iterates first is a ~50/50 coin flip\n-    # decided entirely by the startup hash seed.\n-    tags = {\"alpha\", \"beta\"}\n-    assert list(tags)[0] == \"alpha\"\n+def test_tag_ordering():\n+    # Two elements only: which one iterates first is a ~50/50 coin flip\n+    # decided entirely by the startup hash seed. Use sorted() to make\n+    # the order deterministic regardless of PYTHONHASHSEED.\n+    tags = {\"alpha\", \"beta\"}\n+    assert sorted(tags)[0] == \"alpha\"\n"
+   }
+  },
+  {
+   "t": 11.99,
+   "event": "log",
+   "data": {
+    "msg": "test_tag_ordering: The test fails because set iteration order depends on Python's hash seed (PYTHONHASHSEED), which is randomized\u2026",
+    "kind": "model"
+   }
+  },
+  {
+   "t": 13.0,
+   "event": "analysis",
+   "data": {
+    "test": "test_cache_timestamp",
+    "cls": "true_runtime",
+    "summary": "The test reads the system clock via `time.time()` and asserts that the current millisecond timestamp is not divisible by 3. Because the wall\u2011clock value changes continuously, replicas launched from byte\u2011identical state can observe different values, causing intermittent failures (true runtime nondeterminism).",
+    "repro": "Run the test many times in a loop, e.g.:\\nfor i in {1..20}; do python -m pytest tests/test_service.py::test_cache_timestamp -xvs; done\\nYou will see failures approximately one\u2011third of the executions.",
+    "patch": "--- a/tests/test_service.py\\n+++ b/tests/test_service.py\\n@@ -1,6 +1,7 @@\\n import threading\\n import time\\n+import unittest.mock\\n \\n # ---------------------------------------------------------------------------\\n # Class A \u2014 STARTUP-SEEDED nondeterminism.\\n@@ -58,7 +59,9 @@\\n def test_cache_timestamp():\\n     t = time.time()\\n     assert int(t * 1000) % 3 != 0\\n+    # Use a deterministic timestamp to avoid reliance on wall\u2011clock.\\n+    fixed_time = 1620000000.123  # arbitrary constant\\n+    with unittest.mock.patch('time.time', return_value=fixed_time):\\n+        t = time.time()\\n+        assert int(t * 1000) % 3 != 0\\n \\n # ---------------------------------------------------------------------------\\n # Deterministic controls \u2014 must never diverge.\\n"
+   }
+  },
+  {
+   "t": 13.0,
+   "event": "log",
+   "data": {
+    "msg": "test_cache_timestamp: The test reads the system clock via `time.time()` and asserts that the current millisecond timestamp is not di\u2026",
+    "kind": "model"
+   }
+  },
+  {
+   "t": 14.8,
+   "event": "analysis",
+   "data": {
+    "test": "test_concurrent_counter",
+    "cls": "true_runtime",
+    "summary": "The test fails because two threads concurrently execute a non\u2011atomic read\u2011modify\u2011write on the shared global `_counter`. The occasional `time.sleep(0)` triggered by `time.perf_counter_ns() % 150 == 0` creates a narrow window where the OS scheduler can switch threads, leading to lost updates and a final counter value smaller than the expected 2\u202f\u00d7\u202f_ITERS. This is true runtime nondeterminism \u2013 the outcome depends on live thread scheduling, not on any startup seed.",
+    "repro": "Run `test_concurrent_counter` repeatedly (e.g., in a loop of 1000 invocations) under a typical CI load. When the scheduler happens to interleave the threads such that both read the same value of `_counter` before either writes back, one increment is lost and the assertion `_counter == 2 * _ITERS` fails. Increasing the frequency of the yield (e.g., by temporarily changing the modulus to 1) makes the failure observable almost immediately, confirming the race condition.",
+    "patch": "--- tests/test_service.py\n+++ tests/test_service.py\n@@\n import threading\n import time\n \n # ---------------------------------------------------------------------------\n # Class B \u2014 TRUE RUNTIME nondeterminism (thread scheduling).\n # A read-modify-write on shared state with a narrow, clock-gated yield window.\n # The interleaving is decided by the OS scheduler *during* the run, so replicas\n # disagree even when launched from byte-identical state.\n # ---------------------------------------------------------------------------\n _counter = 0\n _ITERS = 1000\n+\n+_lock = threading.Lock()\n \n def _bump():\n     global _counter\n     for _ in range(_ITERS):\n         v = _counter\n         if time.perf_counter_ns() % 150 == 0:\n             time.sleep(0)\n-        _counter = v + 1\n+        with _lock:\n+            _counter = v + 1\n \n def test_concurrent_counter():\n     global _counter\n     _counter = 0\n     ts = [threading.Thread(target=_bump) for _ in range(2)]\n     for t in ts:\n         t.start()\n     for t in ts:\n         t.join()\n     assert _counter == 2 * _ITERS\n"
+   }
+  },
+  {
+   "t": 14.8,
+   "event": "log",
+   "data": {
+    "msg": "test_concurrent_counter: The test fails because two threads concurrently execute a non\u2011atomic read\u2011modify\u2011write on the shared global `_\u2026",
+    "kind": "model"
+   }
+  },
+  {
+   "t": 14.8,
+   "event": "log",
+   "data": {
+    "msg": "\u2500\u2500 Causal report \u00b7 nvidia/Nemotron-3-Ultra-550b-a55b \u2500\u2500",
+    "kind": "phase"
+   }
+  },
+  {
+   "t": 18.42,
+   "event": "report",
+   "data": {
+    "text": "The differential-execution evidence proves three distinct causal categories. Tests with SSS signatures (test_addition, test_string) are deterministic passes \u2014 they never diverge at any fork point, confirming the flakiness is not in the test logic itself. Tests with DDD signatures (test_cache_timestamp, test_concurrent_counter) diverge at all three fork points with stable fail rates across pre_interpreter, post_import, and post_fixture. This proves the non-determinism originates during test execution itself \u2014 race conditions, timing dependencies, or shared mutable state that manifests regardless of when the test process is forked. The test_tag_ordering DSS signature reveals a startup-seeded cause: it diverges only at the earliest fork point (pre_interpreter, 42% fail rate) but passes deterministically when forked after import or fixture setup (0% at later points). This proves the flakiness is seeded during interpreter startup or module import \u2014 likely global state pollution, import-order side effects, or fixture leakage that gets baked in before the test runs.\n\nThese classes require fundamentally different fixes. True-runtime flakiness (DDD) demands fixing the test's own execution logic: eliminating races, removing timing assumptions, isolating shared state accessed during the test body. Startup-seeded flakiness (DSS) demands fixing test isolation at the process level: ensuring clean interpreter state, deterministic import ordering, fixture teardown that actually resets globals, or moving stateful setup into the test itself rather than module scope. Deterministic passes need no fix.\n\nA retry-count dashboard could not distinguish them because both DDD and DSS tests present identically in production: they fail intermittently, succeed on retry, and yield identical flakiness metrics (failure rate, retry frequency, mean-time-to-pass). The dashboard observes only the symptom \u2014 intermittent failure \u2014 not the causal origin. Only differential forking, by varying when the test process diverges from a common ancestor, exposes whether the non-determinism is baked in at startup or generated during the test's own execution."
+   }
+  },
+  {
+   "t": 18.42,
+   "event": "done",
+   "data": {
+    "target": {
+     "key": "demo",
+     "name": "Bundled demo suite",
+     "description": "Three deliberately distinct entropy sources (hash seed, thread race, wall clock) plus two deterministic controls. Ground truth is known, so this target verifies the classifier end to end.",
+     "notes": ""
+    },
+    "verdicts": [
+     {
+      "test": "test_addition",
+      "cls": "deterministic_pass",
+      "label": "Deterministic pass",
+      "signature": [
+       false,
+       false,
+       false
+      ],
+      "fail_rates": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transition": null,
+      "window": null,
+      "confidence": 0.75,
+      "explain": "Stable and passing at every fork point.",
+      "remedy": "No action required.",
+      "note": ""
+     },
+     {
+      "test": "test_cache_timestamp",
+      "cls": "true_runtime",
+      "label": "True runtime nondeterminism",
+      "signature": [
+       true,
+       true,
+       true
+      ],
+      "fail_rates": [
+       0.417,
+       0.25,
+       0.417
+      ],
+      "transition": null,
+      "window": null,
+      "confidence": 0.99,
+      "explain": "Diverges even when every replica starts from byte-identical state at the latest fork point. The entropy source is live during execution \u2014 thread interleaving, wall-clock reads, or real I/O. Pinning a seed cannot fix this.",
+      "remedy": "Introduce synchronisation or inject the nondeterministic dependency: a lock around the read-modify-write, or a clock/IO seam the test can control.",
+      "note": ""
+     },
+     {
+      "test": "test_concurrent_counter",
+      "cls": "true_runtime",
+      "label": "True runtime nondeterminism",
+      "signature": [
+       true,
+       true,
+       true
+      ],
+      "fail_rates": [
+       0.5,
+       0.25,
+       0.333
+      ],
+      "transition": null,
+      "window": null,
+      "confidence": 0.99,
+      "explain": "Diverges even when every replica starts from byte-identical state at the latest fork point. The entropy source is live during execution \u2014 thread interleaving, wall-clock reads, or real I/O. Pinning a seed cannot fix this.",
+      "remedy": "Introduce synchronisation or inject the nondeterministic dependency: a lock around the read-modify-write, or a clock/IO seam the test can control.",
+      "note": ""
+     },
+     {
+      "test": "test_string",
+      "cls": "deterministic_pass",
+      "label": "Deterministic pass",
+      "signature": [
+       false,
+       false,
+       false
+      ],
+      "fail_rates": [
+       0.0,
+       0.0,
+       0.0
+      ],
+      "transition": null,
+      "window": null,
+      "confidence": 0.75,
+      "explain": "Stable and passing at every fork point.",
+      "remedy": "No action required.",
+      "note": ""
+     },
+     {
+      "test": "test_tag_ordering",
+      "cls": "startup_seeded",
+      "label": "Startup-seeded nondeterminism",
+      "signature": [
+       true,
+       false,
+       false
+      ],
+      "fail_rates": [
+       0.417,
+       1.0,
+       1.0
+      ],
+      "transition": "post_import",
+      "window": [
+       "pre_interpreter",
+       "post_import"
+      ],
+      "confidence": 0.99,
+      "explain": "Diverges when forked before interpreter startup, but is perfectly stable when forked after. The nondeterminism was fixed once at startup \u2014 hash ordering, PID, environment, or a module-level RNG seed. Pinning it is a complete fix.",
+      "remedy": "Pin the startup entropy (PYTHONHASHSEED, explicit sort, or an explicit RNG seed) so ordering is defined rather than incidental.",
+      "note": "Transition is significant: chance of unanimity at 12 replicas given a ~42% fail rate is only p=0.000."
+     }
+    ],
+    "report": "The differential-execution evidence proves three distinct causal categories. Tests with SSS signatures (test_addition, test_string) are deterministic passes \u2014 they never diverge at any fork point, confirming the flakiness is not in the test logic itself. Tests with DDD signatures (test_cache_timestamp, test_concurrent_counter) diverge at all three fork points with stable fail rates across pre_interpreter, post_import, and post_fixture. This proves the non-determinism originates during test execution itself \u2014 race conditions, timing dependencies, or shared mutable state that manifests regardless of when the test process is forked. The test_tag_ordering DSS signature reveals a startup-seeded cause: it diverges only at the earliest fork point (pre_interpreter, 42% fail rate) but passes deterministically when forked after import or fixture setup (0% at later points). This proves the flakiness is seeded during interpreter startup or module import \u2014 likely global state pollution, import-order side effects, or fixture leakage that gets baked in before the test runs.\n\nThese classes require fundamentally different fixes. True-runtime flakiness (DDD) demands fixing the test's own execution logic: eliminating races, removing timing assumptions, isolating shared state accessed during the test body. Startup-seeded flakiness (DSS) demands fixing test isolation at the process level: ensuring clean interpreter state, deterministic import ordering, fixture teardown that actually resets globals, or moving stateful setup into the test itself rather than module scope. Deterministic passes need no fix.\n\nA retry-count dashboard could not distinguish them because both DDD and DSS tests present identically in production: they fail intermittently, succeed on retry, and yield identical flakiness metrics (failure rate, retry frequency, mean-time-to-pass). The dashboard observes only the symptom \u2014 intermittent failure \u2014 not the causal origin. Only differential forking, by varying when the test process diverges from a common ancestor, exposes whether the non-determinism is baked in at startup or generated during the test's own execution.",
+    "fork_points": [
+     "pre_interpreter",
+     "post_import",
+     "post_fixture"
+    ],
+    "replicas": 12,
+    "runs": 36,
+    "true_runtime": 2,
+    "startup_seeded": 1
+   }
+  }
+ ]
+}

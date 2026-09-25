@@ -151,5 +151,7 @@ We also learned to be disciplined about where the LLM sits in the pipeline. Our 
 `nebius-token-factory` · `nebius-sandboxes` · `nvidia-nemotron` · `contree-sdk` · `python` · `fastapi` · `server-sent-events`
 
 ## Try it out
-- GitHub: `https://github.com/<you>/heisenbug`
-- Live demo: `<your deployed URL>`
+- **Live demo:** https://heisenbug-aditya-mehras-projects.vercel.app
+- **GitHub:** https://github.com/matricphase-dot/heisenbug
+
+The hosted demo replays a real session captured against live Nemotron models on Nebius Token Factory — every number, analysis and patch shown is genuine output, not a mock. Heisenbug spawns 36 parallel pytest processes per run, which exceeds serverless execution limits, so the hosted build replays rather than re-executes. `git clone` + `python -m uvicorn backend.server:app` runs the real thing.
