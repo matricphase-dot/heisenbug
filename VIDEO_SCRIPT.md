@@ -4,6 +4,10 @@
 
 **Total: 2:51.** 9 seconds of headroom.
 
+**Narration audio is already recorded** — see `voiceover/` (six MP3 segments, 2:50 total,
+10s under the limit). You only need to screen-record and lay the audio over it. Full
+assembly instructions in `voiceover/README.md`.
+
 **Record against:** https://heisenbug-aditya-mehras-projects.vercel.app (replays a real captured run — reliable, no cold start, ~14s) or your local live server. Either works; the deployed one is safer.
 
 ---
