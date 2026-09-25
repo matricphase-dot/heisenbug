@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Heisenbug — differential execution flake hunter</title>
+<style>
+  :root{
+    --bg:#07090d;--panel:#0e1219;--line:#1d2430;--txt:#e6edf3;--dim:#8b97a8;
+    --green:#76b900;--red:#ff5f56;--amber:#ffbd2e;--blue:#4aa3ff;--violet:#9d7cff;--teal:#2ee6c5;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);
+    font-family:ui-sans-serif,-apple-system,"Segoe UI",Inter,sans-serif}
+  code,pre,.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+  header{display:flex;align-items:center;gap:14px;padding:14px 22px;
+    border-bottom:1px solid var(--line);background:linear-gradient(180deg,#0e1219,#0a0d12)}
+  .logo{font-weight:800;font-size:19px;letter-spacing:-.4px}
+  .logo span{color:var(--green)}
+  .tag{font-size:11px;color:var(--dim);border:1px solid var(--line);padding:3px 9px;border-radius:99px}
+  .tag b{color:var(--txt);font-weight:600}
+  header .spacer{flex:1}
+  button{background:var(--green);color:#08210a;border:0;padding:10px 22px;border-radius:8px;
+    font-weight:700;font-size:14px;cursor:pointer}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  .sub{padding:9px 22px;font-size:12.5px;color:var(--dim);border-bottom:1px solid var(--line);background:#0a0d12}
+  .sub b{color:var(--green)}
+  .thesis{padding:11px 22px;font-size:12.5px;color:#c3ccd8;line-height:1.65;
+    border-bottom:1px solid var(--line);background:rgba(46,230,197,.05)}
+  .thesis b{color:var(--teal)}
+  main{display:grid;grid-template-columns:1.25fr 1fr;height:calc(100vh - 160px)}
+  .left{border-right:1px solid var(--line);display:flex;flex-direction:column;overflow:auto}
+  .right{display:flex;flex-direction:column;overflow:hidden}
+  .ph{font-size:10.5px;text-transform:uppercase;letter-spacing:.13em;color:var(--dim);
+    padding:11px 18px;border-bottom:1px solid var(--line);background:#0b0f15}
+  #matrix{padding:18px}
+  table{border-collapse:collapse;width:100%;font-size:12px}
+  th{text-align:left;color:var(--dim);font-weight:600;padding:8px 6px;font-size:10.5px;
+    text-transform:uppercase;letter-spacing:.08em;border-bottom:1px solid var(--line)}
+  td{padding:9px 6px;border-bottom:1px solid #131922}
+  .tname{font-family:ui-monospace,Menlo,monospace;font-size:11.5px}
+  .cell{display:inline-block;min-width:62px;text-align:center;padding:4px 7px;border-radius:5px;
+    font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:700}
+  .c-div{background:rgba(255,95,86,.16);color:#ff8a80;border:1px solid #7d3b38}
+  .c-stable{background:rgba(118,185,0,.10);color:#9fd350;border:1px solid #3f6300}
+  .c-none{background:#12161d;color:#4b5666;border:1px solid #1d2430}
+  .sig{font-family:ui-monospace,Menlo,monospace;font-weight:800;letter-spacing:.18em;font-size:13px}
+  .badge{display:inline-block;padding:3px 9px;border-radius:99px;font-size:10.5px;font-weight:700}
+  .b-runtime{background:rgba(255,95,86,.16);color:#ff8a80}
+  .b-seeded{background:rgba(255,189,46,.14);color:var(--amber)}
+  .b-detfail{background:rgba(157,124,255,.14);color:var(--violet)}
+  .b-pass{background:rgba(118,185,0,.12);color:#9fd350}
+  #log{flex:1;overflow:auto;padding:14px 18px;font-size:12.3px;line-height:1.65}
+  .row{margin-bottom:5px;display:flex;gap:9px}
+  .row .k{color:var(--dim);flex-shrink:0}
+  .info{color:#c3ccd8}.good{color:var(--green)}.bad{color:var(--red)}
+  .warn{color:var(--amber)}.model{color:var(--violet)}.meta{color:var(--blue)}
+  .phase{color:var(--txt);font-weight:700;border-top:1px solid var(--line);padding-top:9px;margin-top:9px}
+  #findings{border-top:1px solid var(--line);max-height:52%;overflow:auto}
+  .card{border-bottom:1px solid var(--line);padding:13px 18px}
+  .card h4{margin:0 0 7px;font-size:12.5px;font-family:ui-monospace,Menlo,monospace}
+  .card p{margin:0 0 8px;font-size:12.2px;color:#c3ccd8;line-height:1.62}
+  .card pre{margin:7px 0 0;padding:10px;background:#0b0f15;border:1px solid var(--line);
+    border-radius:7px;font-size:11.4px;overflow-x:auto;line-height:1.5}
+  .repro{font-family:ui-monospace,Menlo,monospace;font-size:11.3px;color:var(--teal);
+    background:rgba(46,230,197,.07);padding:7px 10px;border-radius:6px;display:block;margin-bottom:7px}
+  .report{padding:14px 18px;background:rgba(157,124,255,.06);border-bottom:1px solid var(--line);
+    font-size:12.4px;line-height:1.7;color:#d6dde6;white-space:pre-wrap}
+  .empty{color:var(--dim);font-size:13px;padding:60px 24px;text-align:center;line-height:1.85}
+  .note{font-size:11px;color:var(--dim);font-style:italic;margin-top:5px}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">Heisen<span>bug</span></div>
+  <div class="tag">Nebius <b>Sandboxes</b> · identical-state replication</div>
+  <div class="tag">NVIDIA <b>Nemotron</b></div>
+  <div class="spacer"></div>
+  <select id="target" style="background:#0e1219;color:var(--txt);border:1px solid var(--line);
+    border-radius:7px;padding:9px 11px;font-size:13px;margin-right:10px"></select>
+  <button id="go">Hunt flaky tests</button>
+</header>
+<div class="sub" id="cfg">loading…</div>
+<div class="sub" id="tdesc" style="border-bottom:1px solid var(--line)"></div>
+<div class="thesis">
+  Re-running a suite 100 times tells you a test is flaky, never <b>why</b> — every re-run starts from a
+  different state. Heisenbug launches replicas from <b>byte-identical execution state</b> at successive
+  fork points. Divergence from identical state <b>proves</b> the entropy is live; the fork point where
+  divergence stops <b>localises it in time</b>.
+</div>
+
+<main>
+  <div class="left">
+    <div class="ph">Divergence matrix — replicas disagreeing from identical state</div>
+    <div id="matrix"><div class="empty">Press <b>Hunt flaky tests</b> to begin the sweep.<br/>
+      Each cell shows failures / replicas launched from one shared checkpoint.</div></div>
+  </div>
+  <div class="right">
+    <div class="ph">Investigation trace</div>
+    <div id="log"></div>
+    <div id="findings"></div>
+  </div>
+</main>
+
+<script>
+const cells={},verdicts={};let FORKS=[];
+const logEl=document.getElementById("log"),mxEl=document.getElementById("matrix"),
+      fdEl=document.getElementById("findings");
+function esc(s){return String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));}
+
+fetch("/api/targets").then(r=>r.json()).then(d=>{
+  const sel=document.getElementById("target");
+  sel.innerHTML=d.targets.map(t=>
+    `<option value="${t.key}">${t.real_repo?"● real repo · ":""}${esc(t.name)}</option>`).join("");
+  const desc=()=>{
+    const t=d.targets.find(x=>x.key===sel.value);
+    document.getElementById("tdesc").innerHTML =
+      esc(t.description)+(t.notes?` <i style="color:var(--teal)">${esc(t.notes)}</i>`:"");
+  };
+  sel.onchange=desc; desc();
+});
+
+fetch("/api/config").then(r=>r.json()).then(c=>{
+  FORKS=c.fork_points;
+  document.getElementById("cfg").innerHTML =
+    `executor <b>${c.executor}</b> · fork points <b>${c.fork_points.join(" → ")}</b> · `+
+    `<b>${c.replicas}</b> replicas each · models <b>${c.models.nano.split("/").pop()}</b> / `+
+    `<b>${c.models.super.split("/").pop()}</b> / <b>${c.models.ultra.split("/").pop()}</b>`+
+    (c.demo_mode?` · <span style="color:var(--amber)">demo mode — identical method, local executor</span>`:"");
+});
+
+function addLog(msg,kind){
+  const d=document.createElement("div");
+  d.className="row"+(kind==="phase"?" phase":"");
+  d.innerHTML=`<span class="k">›</span><span class="${kind||'info'}">${esc(msg)}</span>`;
+  logEl.appendChild(d);logEl.scrollTop=logEl.scrollHeight;
+}
+
+function renderMatrix(){
+  const tests=Object.keys(cells).sort();
+  if(!tests.length)return;
+  let h=`<table><thead><tr><th>Test</th>`;
+  FORKS.forEach(f=>h+=`<th>${esc(f)}</th>`);
+  h+=`<th>Signature</th><th>Verdict</th></tr></thead><tbody>`;
+  tests.forEach(t=>{
+    h+=`<tr><td class="tname">${esc(t)}</td>`;
+    FORKS.forEach(f=>{
+      const c=cells[t]&&cells[t][f];
+      if(!c){h+=`<td><span class="cell c-none">—</span></td>`;return;}
+      const cls=c.diverges?"c-div":"c-stable";
+      h+=`<td><span class="cell ${cls}">${c.failed}/${c.total}</span></td>`;
+    });
+    const v=verdicts[t];
+    if(v){
+      const sig=v.signature.map(d=>d?"D":"S").join("");
+      const bc={true_runtime:"b-runtime",startup_seeded:"b-seeded",
+                deterministic_fail:"b-detfail",deterministic_pass:"b-pass"}[v.cls];
+      h+=`<td><span class="sig">${sig}</span></td><td><span class="badge ${bc}">${esc(v.label)}</span></td>`;
+    } else h+=`<td class="sig" style="color:#4b5666">···</td><td></td>`;
+    h+=`</tr>`;
+  });
+  h+=`</tbody></table>
+    <div class="note">D = replicas launched from identical state disagreed · S = all replicas agreed.
+    A test still diverging at the last fork point has live entropy; one that goes stable was seeded earlier.</div>`;
+  mxEl.innerHTML=h;
+}
+
+document.getElementById("go").onclick=()=>{
+  const btn=document.getElementById("go");
+  btn.disabled=true;btn.textContent="hunting…";
+  for(const k in cells)delete cells[k];
+  for(const k in verdicts)delete verdicts[k];
+  logEl.innerHTML="";fdEl.innerHTML="";mxEl.innerHTML="";
+  const es=new EventSource("/api/hunt?target="+encodeURIComponent(document.getElementById("target").value));
+  es.addEventListener("log",e=>{const d=JSON.parse(e.data);addLog(d.msg,d.kind);});
+  es.addEventListener("cell",e=>{
+    const d=JSON.parse(e.data);
+    (cells[d.test]=cells[d.test]||{})[d.fork_point]=d;renderMatrix();
+  });
+  es.addEventListener("verdict",e=>{
+    const v=JSON.parse(e.data);verdicts[v.test]=v;renderMatrix();
+  });
+  es.addEventListener("analysis",e=>{
+    const a=JSON.parse(e.data),v=verdicts[a.test]||{};
+    const bc={true_runtime:"b-runtime",startup_seeded:"b-seeded"}[a.cls]||"b-pass";
+    const d=document.createElement("div");
+    d.className="card";
+    d.innerHTML=`<h4>${esc(a.test)} <span class="badge ${bc}">${esc(v.label||"")}</span></h4>`+
+      `<p>${esc(a.summary)}</p>`+
+      (a.repro?`<span class="repro">${esc(a.repro)}</span>`:"")+
+      (a.patch?`<pre>${esc(a.patch)}</pre>`:"")+
+      (v.note?`<div class="note">${esc(v.note)}</div>`:"");
+    fdEl.appendChild(d);
+  });
+  es.addEventListener("report",e=>{
+    const d=document.createElement("div");
+    d.className="report";
+    d.textContent=JSON.parse(e.data).text;
+    fdEl.insertBefore(d,fdEl.firstChild);
+  });
+  es.addEventListener("done",e=>{
+    const d=JSON.parse(e.data);
+    const n=(d.verdicts||[]).length;
+    if(!d.true_runtime && !d.startup_seeded){
+      addLog(`Complete: swept ${n} tests across ${d.runs} suite runs — `+
+             `NO nondeterminism detected. This suite is clean.`,"good");
+    } else {
+      addLog(`Complete: ${d.true_runtime} true-runtime, ${d.startup_seeded} startup-seeded `+
+             `across ${d.runs} test-suite runs.`,"good");
+    }
+    btn.disabled=false;btn.textContent="Hunt again";es.close();
+  });
+  es.onerror=()=>{btn.disabled=false;btn.textContent="Hunt flaky tests";es.close();};
+};
+</script>
+</body>
+</html>
