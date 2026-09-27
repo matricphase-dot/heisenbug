@@ -169,8 +169,10 @@ client = ContreeSync(ContreeConfig(auth=IAMAuth(
 )))
 ```
 
-With the project header supplied, our account returns `403 Insufficient permissions: list` —
-Sandboxes is Beta and entitlement is granted per service-account. `prepare()` catches this and
+With the project header supplied and a **verified-correct** project ID
+(`aiproject-e00ga87da6d3zwj57d` — a wrong ID returns a different error), our account still
+returns `403 Insufficient permissions: list`. Sandboxes is Beta and the role is granted per
+service-account; see `SANDBOXES_ACCESS.md` for the request we filed. `prepare()` catches this and
 falls back to the local executor automatically, so the investigation never aborts. Run
 `python scripts/verify_setup.py` for an exact diagnosis of which of the two conditions you hit.
 
