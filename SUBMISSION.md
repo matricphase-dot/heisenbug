@@ -96,7 +96,11 @@ It never pinned a seed for the thread race, and never added a lock for hash orde
 
 Heisenbug ships two executors behind one interface. `NebiusForkExecutor` is written against ConTree's real branching API — where `state.run(...)` returns a *new* state branched from the parent instead of mutating it, so calling it N times on one parent gives N executions that each began from byte-identical state. `LocalForkExecutor` implements the identical experiment locally.
 
-**Sandboxes is Beta and gated per-account.** Our account returns `ForbiddenError`, so the published runs used the local executor; `prepare()` catches this and falls back automatically. We are stating this plainly rather than implying Sandbox execution we did not have. The method, the classifier and the statistics are executor-independent — and the moment Beta access is granted, the same code path runs against real Sandbox branches with no changes.
+**Sandboxes did not execute on our account, and we want to be precise about why.** Diagnosing it turned up a genuine SDK trap: `ContreeSync(token=...)` silently selects `JWTAuth`, which omits the `Project` header Sandboxes requires — the API answers `400 Missing "Project" header`, but through the SDK it surfaces as a bare `ForbiddenError` pointing nowhere near the cause. Sandboxes needs `IAMAuth(token=..., project_id=...)`.
+
+With that corrected and a verified project ID (`aiproject-e00ga87da6d3zwj57d` — a wrong ID errors differently), the API returns `403 Insufficient permissions`. That is a missing Sandboxes role on the service account, which only Nebius can grant; Sandboxes is in Beta. `prepare()` catches it and falls back to the local executor automatically, so the investigation never aborts. `python scripts/verify_setup.py` reports which of the two conditions you hit.
+
+We are stating this plainly rather than implying Sandbox execution we did not have. The method, the classifier and the statistics are executor-independent — the moment the role is granted, the same code path runs against real Sandbox branches with no changes.
 
 One design detail worth flagging: ConTree derives each state's `uuid` from its content, so branches of a *deterministic* command collapse to the same uuid while a *nondeterministic* one produces different uuids. That is divergence detection handed to you by the platform, and `NebiusForkExecutor` records those uuids as corroborating evidence alongside the test outcomes.
 
@@ -163,5 +167,6 @@ We also learned to be disciplined about where the LLM sits in the pipeline. Our 
 ## Try it out
 - **Live demo:** https://heisenbug-aditya-mehras-projects.vercel.app
 - **GitHub:** https://github.com/matricphase-dot/heisenbug
+- **Video:** `<paste your YouTube URL after uploading video/heisenbug_demo.mp4>`
 
 The hosted demo replays a real session captured against live Nemotron models on Nebius Token Factory — every number, analysis and patch shown is genuine output, not a mock. Heisenbug spawns 36 parallel pytest processes per run, which exceeds serverless execution limits, so the hosted build replays rather than re-executes. `git clone` + `python -m uvicorn backend.server:app` runs the real thing.

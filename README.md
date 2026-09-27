@@ -274,6 +274,16 @@ Research agents branch over *patches* or *messages* using logical replay. Heisen
 **identical live process state** — which is precisely the primitive Sandboxes provide and
 conventional CI does not.
 
+## Repo map
+
+| File | Purpose |
+|---|---|
+| `SUBMISSION.md` | Paste-ready Devpost copy |
+| `SUBMIT_CHECKLIST.md` | Step-by-step submission checklist + verified state |
+| `SANDBOXES_ACCESS.md` | Beta access request, with the diagnosis behind it |
+| `VIDEO_SCRIPT.md` / `voiceover/` / `video/` | Script, narration audio, finished MP4 |
+| `scripts/verify_setup.py` | Checks Nemotron IDs + Sandboxes entitlement |
+
 ## License
 
 Apache 2.0 — see `LICENSE`.
