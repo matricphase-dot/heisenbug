@@ -93,11 +93,28 @@ class NebiusForkExecutor:
 
     def __init__(self, repo_dir: str, target=None):
         from contree_sdk import ContreeSync
+        from contree_sdk.auth import IAMAuth
+        from contree_sdk.config import ContreeConfig
 
         self.repo_dir = repo_dir
         self.target = target
         self._pytest_args = list(getattr(target, "pytest_args", []) or [])
-        self.client = ContreeSync(token=config.NEBIUS_API_KEY or None)
+
+        # IMPORTANT: Sandboxes requires IAMAuth, which sends BOTH an
+        # Authorization bearer token AND a `Project` header. Passing
+        # ContreeSync(token=...) silently selects JWTAuth, which omits the
+        # project header — the API then answers 400 'Missing "Project" header',
+        # or 403 once a project is supplied without the right entitlement.
+        if not config.NEBIUS_PROJECT_ID:
+            raise RuntimeError(
+                "NEBIUS_PROJECT_ID is required for Sandboxes. Find it in the "
+                "Token Factory console (project selector, top-left) and set it "
+                "in .env alongside NEBIUS_API_KEY."
+            )
+        self.client = ContreeSync(ContreeConfig(auth=IAMAuth(
+            token=config.NEBIUS_API_KEY,
+            project_id=config.NEBIUS_PROJECT_ID,
+        )))
         self._states: dict[str, object] = {}
         self.state_uuids: dict[str, list[str]] = {}
 

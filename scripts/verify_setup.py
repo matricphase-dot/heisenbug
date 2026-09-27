@@ -111,6 +111,42 @@ def main() -> int:
             print(f"✗ Inference failed: {exc}")
             return 1
 
+    # ---- 4. Sandboxes entitlement ----------------------------------------
+    print("\n→ Checking Nebius Sandboxes (required by the Coding & Agentic track)")
+    project = os.environ.get("NEBIUS_PROJECT_ID", "")
+    import json as _json
+    import urllib.request as _u
+    SB = "https://api.tokenfactory.nebius.com/sandboxes/v1/images"
+
+    def _probe(headers):
+        req = _u.Request(SB, headers=headers)
+        try:
+            with _u.urlopen(req, timeout=20) as r:
+                return r.status, r.read()[:200].decode("utf-8", "replace")
+        except Exception as exc:
+            body = getattr(exc, "read", lambda: b"")()
+            return getattr(exc, "code", 0), body[:200].decode("utf-8", "replace")
+
+    if not project:
+        print("   ✗ NEBIUS_PROJECT_ID not set.")
+        print("     Find it in the Token Factory console (project selector, top-left).")
+        print("     Sandboxes sends it as a required `Project` header.")
+    else:
+        code, body = _probe({"Authorization": f"Bearer {KEY}", "Project": project})
+        if code == 200:
+            print(f"   ✓ Sandboxes reachable with project {project}")
+        elif code == 403:
+            print(f"   ✗ 403 Insufficient permissions for project {project!r}")
+            print("     Either the project ID is wrong, or this key's service account")
+            print("     lacks the Sandboxes role. Sandboxes is Beta — request access")
+            print("     via Nebius Discord or contree@nebius.com.")
+        elif code == 400:
+            print(f"   ✗ 400 {body}")
+        else:
+            print(f"   ✗ HTTP {code}: {body}")
+        print("     (Heisenbug falls back to the local executor either way —")
+        print("      the experiment is identical, only the substrate differs.)")
+
     if bad:
         print("\n⚠ Some configured IDs do not exist on this account.")
         print("  Pick the closest matches above and export them, e.g.:")

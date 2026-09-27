@@ -152,11 +152,27 @@ Heisenbug ships two executors behind one interface:
   copy-on-write directories and `PYTHONHASHSEED` control. Thread scheduling and the wall clock
   remain genuinely live, so the science is unchanged.
 
-**Sandboxes is in Beta and gated per-account.** On our account the API returns
-`ForbiddenError: You do not have permission to perform this action`, so the runs published here
-were produced by the local executor. `prepare()` catches this and falls back automatically —
-the investigation never aborts. Request Beta access via the Nebius Discord or `contree@nebius.com`
-and the same code path runs against real Sandbox branches with no changes.
+**Sandboxes status on our account.** Getting this working surfaced a real integration trap
+worth documenting. `ContreeSync(token=...)` silently selects `JWTAuth`, which sends only an
+`Authorization` header — the Sandboxes API then answers `400 Missing "Project" header`.
+Sandboxes actually requires `IAMAuth`, which sends **both** a bearer token and a `Project`
+header:
+
+```python
+from contree_sdk import ContreeSync
+from contree_sdk.auth import IAMAuth
+from contree_sdk.config import ContreeConfig
+
+client = ContreeSync(ContreeConfig(auth=IAMAuth(
+    token=os.environ["NEBIUS_API_KEY"],
+    project_id=os.environ["NEBIUS_PROJECT_ID"],   # required
+)))
+```
+
+With the project header supplied, our account returns `403 Insufficient permissions: list` —
+Sandboxes is Beta and entitlement is granted per service-account. `prepare()` catches this and
+falls back to the local executor automatically, so the investigation never aborts. Run
+`python scripts/verify_setup.py` for an exact diagnosis of which of the two conditions you hit.
 
 ## Statistical honesty
 
