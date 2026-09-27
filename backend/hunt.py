@@ -202,11 +202,17 @@ class Heisenbug:
             data = nebius.chat_json(
                 config.MODEL_SUPER, ANALYST_SYSTEM, prompt, temperature=0.2
             )
+            # Reasoning models sometimes double-escape newlines inside JSON
+            # string values, so a patch arrives as one line containing literal
+            # backslash-n. Normalise before it reaches the UI.
+            def _nl(x: str) -> str:
+                return (x or "").replace("\\r\\n", "\n").replace("\\n", "\n").replace("\\t", "    ")
+
             self.emit("analysis", {
                 "test": v.test, "cls": v.cls,
-                "summary": data.get("summary", ""),
-                "repro": data.get("repro", ""),
-                "patch": data.get("patch", ""),
+                "summary": _nl(data.get("summary", "")),
+                "repro": _nl(data.get("repro", "")),
+                "patch": _nl(data.get("patch", "")),
             })
             self.log(f"{v.test}: {data.get('summary','')[:110]}…", "model")
         except Exception as exc:
