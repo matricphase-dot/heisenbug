@@ -1,0 +1,50 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><style>
+*{box-sizing:border-box;margin:0}
+body{width:1200px;height:800px;background:radial-gradient(900px 600px at 78% 12%,#0f1622 0%,#07090d 62%);
+ color:#e6edf3;font-family:ui-sans-serif,-apple-system,"Segoe UI",Inter,sans-serif;
+ padding:62px 66px;display:flex;flex-direction:column;justify-content:space-between}
+.top{display:flex;align-items:center;gap:16px}
+.logo{font-size:56px;font-weight:800;letter-spacing:-1.6px}
+.logo span{color:#76b900}
+.chip{font-size:15px;color:#8b97a8;border:1px solid #1d2430;border-radius:99px;padding:7px 16px}
+h1{font-size:60px;line-height:1.1;font-weight:800;letter-spacing:-1.7px;margin:6px 0 16px}
+h1 em{font-style:normal;color:#76b900}
+.sub{font-size:24px;color:#9aa6b6;line-height:1.5;max-width:940px}
+table{border-collapse:separate;border-spacing:0 9px;font-family:ui-monospace,Menlo,monospace;font-size:20px}
+td{padding:9px 16px}
+.t{color:#c3ccd8;text-align:left;width:390px}
+.sig{font-weight:800;letter-spacing:.3em;font-size:22px}
+.b{border-radius:8px;padding:9px 18px;font-weight:700;font-size:18px;white-space:nowrap}
+.run{background:rgba(255,95,86,.15);color:#ff8a80;border:1px solid #7d3b38}
+.seed{background:rgba(255,189,46,.14);color:#ffbd2e;border:1px solid #6b5212}
+.pass{background:rgba(118,185,0,.12);color:#9fd350;border:1px solid #3f6300}
+.foot{display:flex;align-items:center;gap:14px;font-size:18px;color:#8b97a8}
+.foot b{color:#e6edf3}
+.dot{width:6px;height:6px;border-radius:50%;background:#2a3444}
+</style></head><body>
+<div class="top">
+  <div class="logo">Heisen<span>bug</span></div>
+  <div class="chip">Nebius Token Factory · Sandboxes</div>
+  <div class="chip">NVIDIA Nemotron</div>
+</div>
+
+<div>
+  <h1>Why is this test flaky?<br/><em>Proven, not guessed.</em></h1>
+  <div class="sub">Launch replicas from <b style="color:#e6edf3">byte-identical execution state</b>.
+  Divergence proves the entropy is live. Where it stops proves it was seeded at startup.</div>
+</div>
+
+<table>
+ <tr><td class="t">test_tag_ordering</td><td class="sig" style="color:#ffbd2e">D S S</td>
+     <td><span class="b seed">startup-seeded → pin the seed</span></td></tr>
+ <tr><td class="t">test_concurrent_counter</td><td class="sig" style="color:#ff8a80">D D D</td>
+     <td><span class="b run">true runtime → add a lock</span></td></tr>
+ <tr><td class="t">test_addition</td><td class="sig" style="color:#9fd350">S S S</td>
+     <td><span class="b pass">deterministic → no action</span></td></tr>
+</table>
+
+<div class="foot">
+  <b>Same symptom. Different causes. Mutually wrong fixes.</b>
+  <div class="dot"></div><span>github.com/matricphase-dot/heisenbug</span>
+</div>
+</body></html>
