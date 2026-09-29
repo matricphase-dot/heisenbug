@@ -104,6 +104,19 @@ We are stating this plainly rather than implying Sandbox execution we did not ha
 
 One design detail worth flagging: ConTree derives each state's `uuid` from its content, so branches of a *deterministic* command collapse to the same uuid while a *nondeterministic* one produces different uuids. That is divergence detection handed to you by the platform, and `NebiusForkExecutor` records those uuids as corroborating evidence alongside the test outcomes.
 
+## Evaluation: 100% true positives, 0 false positives across 1,038 real tests
+
+`python scripts/benchmark.py` reproduces this.
+
+| Axis | Target | Result |
+|---|---|---|
+| **True positives** — finds real flakes and names the right cause | bundled suite (ground truth known), 3 trials | **15/15 = 100%** |
+| **False positives** — stays quiet on healthy suites | boltons (519), pyjwt (286), tenacity (141), diskcache (92) | **0 across 1,038 real tests** |
+
+**The false-positive axis caught a real bug in our own tool**, which is the best argument for measuring it. The first benchmark run reported **77 findings** on diskcache. That was not nondeterminism in diskcache — our local executor was running all 12 replicas in one shared working directory, so file-writing tests collided. We confirmed it by contrast: 11 tests "diverged" under 12 parallel replicas, and **0** diverged running serially.
+
+Real Sandbox branches are isolated by construction, so this artifact cannot occur there — our local fallback was cheating. Per-replica working copies took diskcache from 11 divergent to 0, with no loss of sensitivity. We would never have found this by testing only on a suite we already knew was flaky.
+
 ## Statistical honesty (the hard part)
 
 This is where most of the engineering went, and it's the part we're proudest of.

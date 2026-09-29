@@ -176,6 +176,38 @@ service-account; see `SANDBOXES_ACCESS.md` for the request we filed. `prepare()`
 falls back to the local executor automatically, so the investigation never aborts. Run
 `python scripts/verify_setup.py` for an exact diagnosis of which of the two conditions you hit.
 
+## Evaluation
+
+A flake classifier has to be judged on two axes. Most tools report only the first.
+
+```bash
+python scripts/benchmark.py     # reproduces the table below
+```
+
+| Axis | Target | Result |
+|---|---|---|
+| **True positives** — finds real flakes, names the right cause | bundled suite (ground truth known), 3 trials | **15/15 = 100%** |
+| **False positives** — stays quiet on healthy suites | boltons (519), pyjwt (286), tenacity (141), diskcache (92) | **0 across 1,038 real tests** |
+
+Axis 2 matters as much as axis 1: a detector that always finds something is useless,
+because you can never trust it when it does.
+
+### The false-positive axis caught a real bug in our own tool
+
+The first benchmark run reported **77 findings** on diskcache. That was not nondeterminism
+in diskcache — it was our local executor running all 12 replicas in one shared working
+directory, so file-writing tests collided with each other. We confirmed it by contrast:
+11 tests "diverged" under 12 parallel replicas, and **0** diverged when the same replicas
+ran serially.
+
+Real Sandbox branches are isolated by construction, so this class of artifact cannot occur
+there. Our local fallback was cheating. Giving each replica its own copy of the working tree
+took diskcache from **11 divergent to 0**, with no loss of sensitivity — the bundled suite
+still classifies 5/5 correctly.
+
+This is exactly the failure mode the second axis exists to catch, and we would not have
+found it by testing only on a suite we knew was flaky.
+
 ## Statistical honesty
 
 A test failing at rate *p* looks unanimous across *n* replicas with probability `p^n + (1-p)^n`,

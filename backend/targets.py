@@ -79,7 +79,34 @@ TENACITY = Target(
     source_files=["tests/test_tenacity.py"],
 )
 
-TARGETS = {t.key: t for t in (DEMO, DISKCACHE, TENACITY)}
+BOLTONS = Target(
+    key="boltons",
+    name="mahmoud/boltons",
+    description=(
+        "A widely-used pure-Python utility library (~520 tests) full of custom data "
+        "structures — IndexedSet, OrderedMultiDict, and friends. Heavy set/dict "
+        "iteration makes it a prime candidate for hash-order dependence."
+    ),
+    git_url="https://github.com/mahmoud/boltons.git",
+    install=["pip", "install", "-q", "-e", "."],
+    pytest_args=["-o", "addopts="],
+    source_files=[],
+)
+
+PYJWT = Target(
+    key="pyjwt",
+    name="jpadilla/pyjwt",
+    description=(
+        "JWT implementation (~286 tests). Crypto and encoding paths with dict "
+        "ordering in claim serialisation."
+    ),
+    git_url="https://github.com/jpadilla/pyjwt.git",
+    install=["pip", "install", "-q", "-e", "."],
+    pytest_args=["-o", "addopts="],
+    source_files=[],
+)
+
+TARGETS = {t.key: t for t in (DEMO, DISKCACHE, TENACITY, BOLTONS, PYJWT)}
 
 
 def get(key: str) -> Target:
